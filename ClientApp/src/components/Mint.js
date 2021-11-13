@@ -75,7 +75,7 @@ export class Mint extends Component {
                         <input type="text" class="form-control" placeholder="Customer Email *" name="email" autoFocus onChange={this.changeEmail} />
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Customer Wallet Address" name="password " onChange={this.changePassword} />
+                        <input type="text" class="form-control" placeholder="Customer Wallet Address" name="address " onChange={this.updateWalletAddress} />
                     </div>
                     <div class="form-group">
                         <input type="file" class="form-control" placeholder="" name="nftfile " onChange={this.updateNftFile} />
