@@ -2,6 +2,7 @@
 import './LoginForm.css';
 import { create } from 'ipfs-http-client';
 const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
+const { Accounts } = require("web3-eth-accounts");
 
 const PROJECT_ID = process.env.REACT_APP_INFURA_PROJECT_ID;
 const PROJECT_SECRET = process.env.REACT_APP_INFURA_PROJECT_SECRET;
@@ -30,7 +31,9 @@ export class Mint extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            customerName: "", customerEmail: "", walletAddress: "0x", nftFile: {}, uploaded: false, mintSuccess: false, mintFail: false
+            customerName: "", customerEmail: "", walletAddress: "0x", nftFile: {}, uploaded: false,
+            mintSuccess: false, mintFail: false, displayMessage: false, message: "Nothing is happening", creatingWallet: false,
+            newWalletAddress: "", newWalletPrivateKey: "", info: '', displayInfo: false
         };
         this.updateCustomerName = this.updateCustomerName.bind(this);
         this.updateCustomerEmail = this.updateCustomerEmail.bind(this);
@@ -38,6 +41,7 @@ export class Mint extends Component {
         this.updateNftFile = this.updateNftFile.bind(this);
         this.validateForm = this.validateForm.bind(this);
         this.submitForm = this.submitForm.bind(this);
+        this.createNewWallet = this.createNewWallet.bind(this);
     }
 
 
@@ -87,6 +91,22 @@ export class Mint extends Component {
         });
     }
 
+    createNewWallet(event) {
+        var createWallet = !this.state.creatingWallet;
+        this.setState({
+            creatingWallet: createWallet
+        });
+        if (createWallet) {
+            const newWallet = web3.eth.accounts.create();
+            this.setState({
+                newWalletAddress: newWallet.address,
+                newWalletPrivateKey: newWallet.privateKey,
+                walletAddress: newWallet.address
+            });
+
+        }
+    }
+
     updateNftFile(event) {
         if (event.target.files) {
             this.setState({
@@ -105,14 +125,13 @@ export class Mint extends Component {
     }
 
     async mintNFT(metadataURL) {
-        alert(PUBLIC_KEY);
         const nonce = await web3.eth.getTransactionCount(PUBLIC_KEY, "latest");
         const trans = {
             from: PUBLIC_KEY,
             to: nftContractAddress,
             nonce: nonce,
             gas: 500000,
-            data: nftContract.methods.mintNFT(PUBLIC_KEY, metadataURL).encodeABI()
+            data: nftContract.methods.mintNFT(this.state.walletAddress, metadataURL).encodeABI()
         };
         const signPromise = web3.eth.accounts.signTransaction(trans, PRIVATE_KEY);
         return signPromise.then((signedTrans) => {
@@ -134,6 +153,12 @@ export class Mint extends Component {
     async submitForm(event) {
        event.preventDefault();
         try {
+            this.setState({
+                mintFail: false,
+                mintSuccess: false,
+                displayMessage: true,
+                message: "Minting! Step 1 of 3..."
+            });
             const addedFile =  await ipfsClient.add(this.state.nftFile);
             const fileUrl = 'https://ipfs.infura.io/ipfs/' + addedFile.path;
 
@@ -144,30 +169,54 @@ export class Mint extends Component {
                 attributes: []
             });
 
+            this.setState({
+                message: "Minting! Step 2 of 3..."
+            });
+
             const addedJson = await ipfsClient.add(metaDataDoc);
             const metadataUrl = 'https://ipfs.infura.io/ipfs/' + addedJson.path;
 
+            this.setState({
+                message: "Minting! Step 3 of 3..."
+            });
+
             const transDetails = await this.mintNFT(metadataUrl);
             if (transDetails != "0") {
-                alert(transDetails);
                 console.log(transDetails);
                 console.log(transDetails.transactionHash);
                 console.log(transDetails.gasUsed);
                 this.setState({
                     mintSuccess: true,
-                    mintFail: false
+                    mintFail: false,
+                    displayMessage: false,
+                    customerName: "",
+                    customerEmail: "",
+                    walletAddress: "",
+                    nftFile: {}
                 });
+                var walletInfo = "Your New Wallet Address is:\n" + this.state.newWalletAddress +
+                    "\nAnd Your Private Key Is:\n" + this.state.newWalletPrivateKey +
+                    "\nPRINT THIS PAGE AND KEEP THIS INFO SECURE!";
+                this.setState({
+                    displayInfo: true,
+                    info: walletInfo
+                });
+                document.getElementById("nftFile").value = null;
             } else {
                 this.setState({
                     mintFail: true,
-                    mintSuccess: false
+                    mintSuccess: false,
+                    displayMessage: false,
+                    displayInfo: false
                 });
             }       
         } catch (error) {
             console.log(error);
             this.setState({
                 mintFail: true,
-                mintSuccess: false
+                mintSuccess: false,
+                displayMessage: false,
+                displayInfo: false
             });
         }            
     }
@@ -179,34 +228,50 @@ export class Mint extends Component {
                 <h3>Mint</h3>
                 <form onSubmit={this.submitForm} >
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Customer Name" name="email" autoFocus onChange={this.updateCustomerName} />
+                        <input type="text" class="form-control" placeholder="Customer Name" name="customername" value={ this.state.customerName } autoFocus onChange={this.updateCustomerName} />
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Customer Email" name="email" autoFocus onChange={this.updateCustomerEmail} />
+                        <input type="text" class="form-control" placeholder="Customer Email" name="email" value={this.state.customerEmail } onChange={this.updateCustomerEmail} />
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Customer Wallet Address" id="addressInput" name="address" onChange={this.updateWalletAddress} />
+                        <label class="max-width">
+                            <input type="checkbox" class="form-control" id="create-checkbox" value="Create New Wallet" name="newwallet" checked={this.state.creatingWallet} onChange={this.createNewWallet} />
+                            Create New Wallet
+                        </label>
                     </div>
                     <div class="form-group">
-                        <input type="file" class="form-control cursor-pointer" placeholder="" name="nftfile " onChange={this.updateNftFile} />
+                        <input type="text" class="form-control" placeholder="Customer Wallet Address" id="addressInput" name="address" value={this.state.walletAddress} disabled={ this.state.creatingWallet} onChange={this.updateWalletAddress} />
                     </div>
                     <div class="form-group">
-                        <input type="submit" class="btnSubmit" value="Mint" disabled={!this.validateForm()} />
+                        <input type="file" class="form-control cursor-pointer" placeholder="" name="nftfile " id="nftFile" onChange={this.updateNftFile} />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btnSubmit" value="Mint" disabled={!this.validateForm() && !this.state.displayMessage} />
                     </div>
                     {this.state.mintSuccess && (
                         <div class="form-group">
                             <div class="alert alert-success" role="alert">
-                                Your shit was uploaded
+                                Your file was successfully minted!
                             </div>
                         </div>
                     )}
                     {this.state.mintFail && (
                         <div class="form-group">
                             <div class="alert alert-danger" role="alert">
-                                Your shit was NOT uploaded
+                                Something went wrong.
                             </div>
                         </div>
-                    )}         
+                    )}
+                    {this.state.displayMessage && (
+                        <div class="alert alert-info" role="alert">
+                            { this.state.message }
+                        </div>
+                    )}
+                    {this.state.displayInfo && (
+                        <div class="alert alert-info" role="alert">
+                            {this.state.info}
+                        </div>
+                    )}
                 </form>
             </div>
         );
