@@ -47,3 +47,7 @@
     pointer-events: all !important;
     background-color: gray;
 }
+
+.cursor-pointer {
+    cursor: pointer;
+}
