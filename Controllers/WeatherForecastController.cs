@@ -15,7 +15,9 @@ namespace NFTDemo.Controllers
     {
 
         //string devConnString = "Data Source=BEL-G09S-DEV;Initial Catalog=TAG;User ID=sa;Password=NCVMAag+^8ZrgGgt^jpdwB8rQZ5%eF;Integrated Security=False";
-        string stagingConnString = ConfigurationManager.ConnectionStrings["AzureSqlConnString"].ConnectionString;
+        //string stagingConnString = ConfigurationManager.ConnectionStrings["AzureSqlConnString"].ConnectionString;
+
+        string azConnString = "Data Source=tcp:autonetdemodb.database.windows.net,1433;Initial Catalog=AutoNetDemoDB;User Id=SQL_Admin@autonetdemodb;Password=yne7KJI6bx389anVLa1A";
 
         private static readonly string[] Summaries = new[]
         {
@@ -34,7 +36,7 @@ namespace NFTDemo.Controllers
         {
             string queryString = "SELECT Full_Name, Email FROM USERS";
             List<String> lastNames = new List<string>();
-            using (SqlConnection conn = new SqlConnection(stagingConnString))
+            using (SqlConnection conn = new SqlConnection(azConnString))
             {
                 SqlCommand command = new SqlCommand(queryString, conn);
                 conn.Open();
