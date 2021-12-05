@@ -14,12 +14,12 @@ namespace NFTDemo.Models
 
         public int NftId { get; set; }
         public string IpfsUrl { get; set; }
-        public int? CustomerId { get; set; }
         public int? Success { get; set; }
         public DateTime? DateCreated { get; set; }
         public DateTime? DateDisabled { get; set; }
+        public int? WalletId { get; set; }
 
-        public virtual Customer Customer { get; set; }
+        public virtual Wallet Wallet { get; set; }
         public virtual ICollection<Transaction> Transactions { get; set; }
     }
 }

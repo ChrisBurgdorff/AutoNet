@@ -185,6 +185,31 @@ export class Mint extends Component {
                 console.log(transDetails);
                 console.log(transDetails.transactionHash);
                 console.log(transDetails.gasUsed);
+                var mintNftTransaction = {
+                    CustomerName: this.state.customerName,
+                    CustomerEmail: this.state.customerEmail,
+                    WalletAddress: this.state.walletAddress,
+                    UserID: 1,
+                    IpfsUrl: metadataUrl
+                };
+                //var postData = new FormData();
+                //postData.append("MintNftTransaction", JSON.stringify(mintNftTransaction));
+                var postData = JSON.stringify(mintNftTransaction);
+                console.log(mintNftTransaction);
+                fetch('api/mintnft',
+                    {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: postData
+                    }).then(response => response.text())
+                    .then(data => {
+                        //console.log("RESPONSE FROM POST");
+                        //console.log(data);
+
+                    });
                 this.setState({
                     mintSuccess: true,
                     mintFail: false,
@@ -209,7 +234,8 @@ export class Mint extends Component {
                     displayMessage: false,
                     displayInfo: false
                 });
-            }       
+            }
+            
         } catch (error) {
             console.log(error);
             this.setState({

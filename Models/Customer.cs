@@ -9,7 +9,6 @@ namespace NFTDemo.Models
     {
         public Customer()
         {
-            Nfts = new HashSet<Nft>();
             Transactions = new HashSet<Transaction>();
             Wallets = new HashSet<Wallet>();
         }
@@ -22,7 +21,6 @@ namespace NFTDemo.Models
         public DateTime? DateCreated { get; set; }
         public DateTime? DateDisabled { get; set; }
 
-        public virtual ICollection<Nft> Nfts { get; set; }
         public virtual ICollection<Transaction> Transactions { get; set; }
         public virtual ICollection<Wallet> Wallets { get; set; }
     }

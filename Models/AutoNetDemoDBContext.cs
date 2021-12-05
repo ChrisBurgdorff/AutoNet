@@ -25,6 +25,7 @@ namespace NFTDemo.Models
         public virtual DbSet<TransactionType> TransactionTypes { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Wallet> Wallets { get; set; }
+        public virtual DbSet<SpMintNft> MintNft { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -102,8 +103,6 @@ namespace NFTDemo.Models
 
                 entity.Property(e => e.NftId).HasColumnName("NFT_ID");
 
-                entity.Property(e => e.CustomerId).HasColumnName("Customer_ID");
-
                 entity.Property(e => e.DateCreated)
                     .HasColumnType("datetime")
                     .HasColumnName("Date_Created");
@@ -116,10 +115,12 @@ namespace NFTDemo.Models
                     .HasMaxLength(1000)
                     .HasColumnName("IPFS_URL");
 
-                entity.HasOne(d => d.Customer)
+                entity.Property(e => e.WalletId).HasColumnName("Wallet_ID");
+
+                entity.HasOne(d => d.Wallet)
                     .WithMany(p => p.Nfts)
-                    .HasForeignKey(d => d.CustomerId)
-                    .HasConstraintName("FK_NFTs_Customers");
+                    .HasForeignKey(d => d.WalletId)
+                    .HasConstraintName("FK_NFTs_Wallets");
             });
 
             modelBuilder.Entity<Transaction>(entity =>

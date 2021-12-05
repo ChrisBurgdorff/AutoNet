@@ -24,6 +24,7 @@ namespace NFTDemo
         {
 
             services.AddControllersWithViews();
+            services.AddControllers().AddNewtonsoftJson();
 
             services.AddDbContext<AutoNetDemoDBContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("AzureDB"))
