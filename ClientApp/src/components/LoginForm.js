@@ -1,5 +1,7 @@
 ﻿import React, { Component } from 'react';
 import './LoginForm.css';
+import client from '../httpClient';
+import axios from 'axios';
 
 export class LoginForm extends Component {
 
@@ -28,8 +30,23 @@ export class LoginForm extends Component {
     }
 
     submitLoginForm(event) {
-        alert("Your fucking email is " + this.state.email + " and your fucking password is " + this.state.password);
+        //alert("Your fucking email is " + this.state.email + " and your fucking password is " + this.state.password);
         event.preventDefault();
+        let formData = {
+            email: this.state.email,
+            password: this.state.password
+        };
+        axios.post('api/registration/login', formData).then((res) => {
+            if (res.data.hasOwnProperty('message')) {
+                //Login failed
+                //TODO: Do something with message
+            } else {
+                localStorage.setItem('user', JSON.stringify(res.data));
+                client.setTokenOnLogin();
+            }            
+        }).catch((res) => {
+            console.log("Login Failed");
+        });
     }
 
     render() {
